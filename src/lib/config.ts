@@ -1,6 +1,6 @@
 export const siteConfig = {
   title: "GitStory",
-  description: "Your 2025 GitStory is here—explore your git journey from the past year, visualized and celebrated.",
+  description: "Your GitStory is here—explore your coding journey from the past year, visualized and celebrated.",
   links: {
     github: "https://github.com/vishkx/gitstory",
     github_api: "https://api.github.com/repos/vishkx/gitstory"

@@ -7,8 +7,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --font-sans: var(--font-inter-tight), "Inter Tight", sans-serif;
+  --font-serif: var(--font-instrument-serif), "Instrument Serif", serif;
+  --font-mono: var(--font-space-mono), "Space Mono", monospace;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -45,6 +48,44 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --animate-meteor: meteor 5s linear infinite;
+
+  @keyframes meteor {
+    0% {
+      transform: rotate(var(--angle)) translateX(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateX(-500px);
+      opacity: 0;
+    }
+  }
+
+  --animate-grid: grid 15s linear infinite;
+
+  @keyframes grid {
+    0% {
+      transform: translateY(-50%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  --animate-shiny-text: shiny-text 8s infinite;
+
+  @keyframes shiny-text {
+    0%, 90%, 100% {
+      background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+    30%, 60% {
+      background-position: calc(100% + var(--shiny-width)) 0;
+    }
+  }
 }
 
 :root {
@@ -125,7 +166,22 @@
   }
 }
 
-::view-transition-old(root), ::view-transition-new(root) {
+@layer components {
+  .status-banner {
+    @apply flex items-center gap-2 rounded-lg px-3 py-0.5 text-xs font-mono;
+  }
+
+  .status-banner--success {
+    @apply bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400;
+  }
+
+  .status-banner--error {
+    @apply bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }

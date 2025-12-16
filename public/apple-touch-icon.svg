@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <!-- Background (Apple requires filled background) -->
+  <rect width="180" height="180" rx="40" fill="#000000"/>
+  
+  <!-- Git branch -->
+  <g stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none">
+    <path d="M60 130 L60 80 Q60 55 85 55 L130 55"/>
+    <path d="M60 100 Q60 75 85 75 L110 75"/>
+    <path d="M110 75 Q130 75 130 60 L130 55"/>
+  </g>
+  
+  <!-- Commit dots -->
+  <circle cx="60" cy="130" r="14" fill="#ffffff"/>
+  <circle cx="110" cy="75" r="11" fill="#ffffff"/>
+  <circle cx="130" cy="55" r="14" fill="#ffffff"/>
+</svg>

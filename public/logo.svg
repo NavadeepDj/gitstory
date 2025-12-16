@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#000000"/>
+  
+  <!-- Git branch -->
+  <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none">
+    <path d="M11 22 L11 14 Q11 10 14 10 L22 10"/>
+    <path d="M11 17 Q11 14 14 14 L19 14"/>
+    <path d="M19 14 Q22 14 22 11 L22 10"/>
+  </g>
+  
+  <!-- Commit dots -->
+  <circle cx="11" cy="22" r="2.5" fill="#ffffff"/>
+  <circle cx="19" cy="14" r="2" fill="#ffffff"/>
+  <circle cx="22" cy="10" r="2.5" fill="#ffffff"/>
+</svg>
