@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Instrument_Serif, Inter_Tight, Space_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/context/providers'
-import { Analytics } from '@vercel/analytics/next'
 
 // Configure fonts using Next.js font optimization
 const instrumentSerif = Instrument_Serif({
@@ -138,7 +137,6 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
-        <Analytics />
       </body>
     </html>
   )
