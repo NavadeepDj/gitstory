@@ -7,6 +7,7 @@ import { RetroGrid } from "@/components/ui/retro-grid";
 import { HyperText } from "@/components/ui/hyper-text";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { WordRotate } from "@/components/ui/word-rotate";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SlideProps {
     data: GitStoryData;
@@ -14,17 +15,26 @@ interface SlideProps {
 }
 
 export default function IntroSlide({ data, isActive }: SlideProps) {
+    const isMobile = useIsMobile();
+
     return (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-background text-foreground relative overflow-hidden">
-            {/* Magic Background */}
-            {/* <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-black z-0" /> */}
-            <RetroGrid />
-            <Meteors number={30} className="bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.5)] z-[5]" />
+            {/* Magic Background - RetroGrid is desktop only for performance */}
+            {!isMobile && <RetroGrid />}
+            <Meteors number={isMobile ? 20 : 30} className="bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.5)] z-[5]" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-0" />
 
-            {/* Glowing Orbs */}
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full opacity-40 animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[120px] rounded-full opacity-40 animate-pulse" style={{ animationDelay: "2s" }} />
+            {/* Glowing Orbs - Simplified on mobile */}
+            {!isMobile && (
+                <>
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full opacity-40 animate-pulse" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[120px] rounded-full opacity-40 animate-pulse" style={{ animationDelay: "2s" }} />
+                </>
+            )}
+            {/* Mobile-friendly subtle gradient background */}
+            {isMobile && (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 z-0" />
+            )}
 
             <motion.div
                 initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
@@ -73,11 +83,14 @@ export default function IntroSlide({ data, isActive }: SlideProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={isActive ? { y: 0, opacity: 1 } : {}}
                 transition={{ delay: 0.6, duration: 0.8 }}
-                className="z-10 h-8 md:h-12 overflow-hidden flex items-center justify-center mt-4"
+                className="z-10 h-8 md:h-12 overflow-hidden flex items-center justify-center mt-4 w-full px-4"
             >
                 <WordRotate
-                    words={["365 Days of Creation", "Millions of Keystrokes", "One Epic Story"]}
-                    className="text-lg md:text-xl text-muted-foreground font-mono tracking-[0.2em] uppercase"
+                    words={isMobile
+                        ? ["365 Days", "Epic Code", "One Story"]
+                        : ["365 Days of Creation", "Millions of Keystrokes", "One Epic Story"]
+                    }
+                    className="text-sm md:text-xl text-muted-foreground font-mono tracking-[0.1em] md:tracking-[0.2em] uppercase text-center"
                 />
             </motion.div>
 

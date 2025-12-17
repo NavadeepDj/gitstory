@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { NumberTicker } from "@/components/ui/number-ticker";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SlideProps {
     data: GitStoryData;
@@ -22,6 +23,8 @@ interface SlideProps {
 }
 
 export default function StatsSlide({ data, isActive }: SlideProps) {
+    const isMobile = useIsMobile();
+
     const stats = [
         {
             label: "Total Commits",
@@ -129,8 +132,17 @@ export default function StatsSlide({ data, isActive }: SlideProps) {
 
             {/* Background Effects */}
             <DotPattern className="opacity-20 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-[100px] animate-pulse delay-700" />
+            {/* Blur effects - desktop only for performance */}
+            {!isMobile && (
+                <>
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+                    <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-[100px] animate-pulse delay-700" />
+                </>
+            )}
+            {/* Mobile-friendly gradient background */}
+            {isMobile && (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+            )}
 
             <motion.div
                 initial={{ opacity: 0, y: -30 }}
@@ -138,8 +150,8 @@ export default function StatsSlide({ data, isActive }: SlideProps) {
                 transition={{ duration: 0.6, ease: "easeOut" }}
                 className="text-center z-10 mb-4 md:mb-10"
             >
-                <h2 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50 tracking-tight">
-                    Your Impact at a Glance
+                <h2 className="text-3xl md:text-5xl font-serif italic font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50 tracking-tight">
+                    Your Impact {!isMobile ? " at a Glance" : ""}
                 </h2>
             </motion.div>
 
