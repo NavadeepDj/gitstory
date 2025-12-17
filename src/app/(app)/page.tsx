@@ -358,7 +358,7 @@ export default function HomePage() {
             <Button
               type="submit"
               size="lg"
-              // disabled={isLoading || !username}
+              disabled={isLoading || !username.trim()}
               className="w-full px-6! py-6! font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {isLoading ? (
