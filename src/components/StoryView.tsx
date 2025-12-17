@@ -16,6 +16,8 @@ import VelocitySlide from "./slides/VelocitySlide";
 import CompositionSlide from "./slides/CompositionSlide";
 import TopicsSlide from "./slides/TopicsSlide";
 import CommunitySlide from "./slides/CommunitySlide";
+import ArchetypeSlide from "./slides/ArchetypeSlide";
+import StreakSlide from "./slides/StreakSlide";
 import { Button } from "./ui/button";
 import { AnimatedThemeToggler } from "./custom/animated-theme-toggler";
 import { Skeleton } from "./ui/skeleton";
@@ -31,13 +33,15 @@ const SLIDE_DURATION = 10 * 1000; // 10 seconds per slide
 const slides = [
   { id: "intro", component: IntroSlide },
   { id: "stats", component: StatsSlide },
-  { id: "composition", component: CompositionSlide },
+  { id: "streak", component: StreakSlide },
+  { id: "heatmap", component: CompositionSlide },
   { id: "productivity", component: ProductivitySlide },
   { id: "velocity", component: VelocitySlide },
   { id: "languages", component: LanguagesSlide },
   { id: "topics", component: TopicsSlide },
   { id: "repos", component: ReposSlide },
   { id: "community", component: CommunitySlide },
+  { id: "archetype", component: ArchetypeSlide },
   { id: "outro", component: OutroSlide },
 ];
 

@@ -40,9 +40,14 @@ export default function CompositionSlide({ data, isActive }: SlideProps) {
     // or just show the whole year. The user image shows a grid.
     // Let's grab the last 5-6 months to fill the slide nicely without scrolling.
 
-    // 150 days ~ 5 months, 217 days ~ 7+ months
-    const daysToShow = isMobile ? 150 : 217;
+    // 120 days ~ 4 months for mobile, full year for desktop
+    const daysToShow = isMobile ? 120 : 365;
     const recentData = calendarData.slice(-daysToShow);
+
+    // Calculate stats
+    const activeDays = data.contributions?.filter(c => c.count > 0).length || 0;
+    const totalDays = data.contributions?.length || 365;
+    const activePercentage = Math.round((activeDays / totalDays) * 100);
 
     const explicitTheme: ThemeInput = {
         light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
@@ -58,7 +63,7 @@ export default function CompositionSlide({ data, isActive }: SlideProps) {
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={isActive ? { opacity: 1, y: 0 } : {}}
-                className="z-10 text-center mb-8 md:mb-12"
+                className="z-10 text-center mb-4 md:mb-8"
             >
                 <h2 className="text-3xl md:text-5xl font-serif font-bold mb-2 md:mb-3 tracking-tight">
                     Every Day Counts
@@ -72,7 +77,7 @@ export default function CompositionSlide({ data, isActive }: SlideProps) {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={isActive ? { scale: 1, opacity: 1 } : {}}
                 transition={{ delay: 0.2 }}
-                className="z-10 p-6 md:p-12 rounded-3xl bg-background border border-border shadow-2xl overflow-hidden overflow-x-auto max-w-full md:max-w-5xl"
+                className="z-10 p-4 md:p-8 rounded-3xl bg-background border border-border shadow-2xl overflow-hidden overflow-x-auto max-w-full md:max-w-5xl"
             >
                 <div className="min-w-fit">
                     <ActivityCalendar
@@ -101,16 +106,29 @@ export default function CompositionSlide({ data, isActive }: SlideProps) {
                 </div>
             </motion.div>
 
+            {/* Stats Row */}
             <motion.div
-                initial={{ opacity: 0 }}
-                animate={isActive ? { opacity: 1 } : {}}
-                transition={{ delay: 0.8 }}
-                className="mt-12 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isActive ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.5 }}
+                className="flex gap-4 md:gap-8 mt-6 md:mt-8 z-10"
             >
-                <p className="text-xs font-mono text-gray-500 tracking-[0.2em] uppercase">
-                    YOUR YEAR IN GREEN
-                </p>
+                <div className="text-center">
+                    <p className="text-2xl md:text-4xl font-bold text-emerald-500">{activePercentage}%</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Active Days</p>
+                </div>
+                <div className="w-px bg-border" />
+                <div className="text-center">
+                    <p className="text-2xl md:text-4xl font-bold text-cyan-500">{data.longestStreak}</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Day Streak</p>
+                </div>
+                <div className="w-px bg-border" />
+                <div className="text-center">
+                    <p className="text-2xl md:text-4xl font-bold text-purple-500">{data.totalCommits}</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Total Commits</p>
+                </div>
             </motion.div>
         </div>
     );
 }
+
