@@ -33,7 +33,7 @@ export default function StreakSlide({ data, isActive }: SlideProps) {
 
     // Calculate consistency (days with contributions / total days)
     const activeDays = contributions.filter(c => c.count > 0).length;
-    const consistency = Math.round((activeDays / contributions.length) * 100);
+    const consistency = contributions.length > 0 ? Math.round((activeDays / contributions.length) * 100) : 0;
 
     // Get streak tier
     const getStreakTier = (streak: number) => {

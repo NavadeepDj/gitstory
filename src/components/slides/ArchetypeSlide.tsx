@@ -9,46 +9,57 @@ interface SlideProps {
 }
 
 // Archetype descriptions and emojis
+// Must match the archetype names returned by calculateArchetype() in scoringAlgorithms.ts
 const archetypeData: Record<string, { emoji: string; tagline: string; traits: string[] }> = {
-    "The Architect": {
-        emoji: "🏗️",
-        tagline: "Building the future, one commit at a time",
-        traits: ["Strategic", "Methodical", "Visionary"]
+    "The Collaboration Maestro": {
+        emoji: "🤝",
+        tagline: "Building bridges through pull requests",
+        traits: ["Collaborative", "Communicative", "Team Player"]
     },
-    "The Night Owl": {
+    "The Quality Guardian": {
+        emoji: "🛡️",
+        tagline: "Protecting codebases, one review at a time",
+        traits: ["Meticulous", "Thorough", "Reliable"]
+    },
+    "The Midnight Architect": {
         emoji: "🦉",
         tagline: "When the world sleeps, you create",
         traits: ["Focused", "Independent", "Creative"]
     },
-    "The Early Bird": {
-        emoji: "🐦",
+    "The Dawn Coder": {
+        emoji: "🌅",
         tagline: "First light, first commit",
         traits: ["Disciplined", "Productive", "Organized"]
     },
-    "The Sprinter": {
-        emoji: "⚡",
-        tagline: "Bursts of brilliance that move mountains",
-        traits: ["Intense", "Passionate", "Impactful"]
+    "The Passion Programmer": {
+        emoji: "🔥",
+        tagline: "Weekends are for side quests",
+        traits: ["Passionate", "Dedicated", "Driven"]
     },
-    "The Marathon Runner": {
-        emoji: "🏃",
+    "The Relentless Builder": {
+        emoji: "🏗️",
+        tagline: "Building the future, one commit at a time",
+        traits: ["Prolific", "Unstoppable", "Visionary"]
+    },
+    "The Steady Craftsman": {
+        emoji: "⚒️",
         tagline: "Consistency is your superpower",
         traits: ["Persistent", "Reliable", "Steady"]
     },
-    "The Polyglot": {
-        emoji: "🌐",
-        tagline: "Speaking every language of code",
-        traits: ["Versatile", "Curious", "Adaptable"]
+    "The Visionary Planner": {
+        emoji: "🔮",
+        tagline: "Seeing problems before they arise",
+        traits: ["Strategic", "Thoughtful", "Proactive"]
     },
-    "The Open Source Hero": {
-        emoji: "🦸",
+    "The Open Source Star": {
+        emoji: "⭐",
         tagline: "Making the world a better place through code",
-        traits: ["Generous", "Community-driven", "Impactful"]
+        traits: ["Influential", "Community-driven", "Impactful"]
     },
-    "The Weekend Warrior": {
-        emoji: "⚔️",
-        tagline: "Weekends are for side quests",
-        traits: ["Passionate", "Dedicated", "Balanced"]
+    "The Curious Explorer": {
+        emoji: "🧭",
+        tagline: "Every repository is a new adventure",
+        traits: ["Curious", "Adventurous", "Versatile"]
     },
     // Default fallback
     "default": {
@@ -114,11 +125,14 @@ export default function ArchetypeSlide({ data, isActive }: SlideProps) {
                     transition={{ type: "spring", bounce: 0.5, delay: 0.1 }}
                     className="mb-4 md:mb-6"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        <span className="text-xs md:text-sm font-medium text-primary uppercase tracking-wider">
-                            Your Developer Persona
-                        </span>
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-indigo-500/30 rounded-full blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                        <div className="relative inline-flex items-center gap-2 px-6 py-2 bg-background/80 backdrop-blur-xl border border-white/10 rounded-full ring-1 ring-white/20">
+                            <Sparkles className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
+                            <span className="text-xs md:text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-indigo-400 uppercase tracking-wider">
+                                Your Developer Persona
+                            </span>
+                        </div>
                     </div>
                 </motion.div>
 

@@ -40,7 +40,7 @@ export default function VelocitySlide({ data, isActive }: SlideProps) {
         return weeks;
     }, [dailyData]);
 
-    const maxWeeklyCommits = Math.max(...weeklyData.map(d => d.commits));
+    const maxWeeklyCommits = weeklyData.length > 0 ? Math.max(...weeklyData.map(d => d.commits)) : 0;
     const busiestWeek = weeklyData.find(d => d.commits === maxWeeklyCommits);
 
     // Counter animation
@@ -199,7 +199,7 @@ export default function VelocitySlide({ data, isActive }: SlideProps) {
                         </div>
                         <div className="text-right">
                             <div className="text-xs text-muted-foreground">Weekly Avg</div>
-                            <div className="text-lg font-bold text-foreground">{Math.round(totalCommits / weeklyData.length)}</div>
+                            <div className="text-lg font-bold text-foreground">{weeklyData.length > 0 ? Math.round(totalCommits / weeklyData.length) : 0}</div>
                         </div>
                     </div>
                 </motion.div>
