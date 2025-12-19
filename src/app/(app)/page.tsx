@@ -33,10 +33,13 @@ import { GitStoryData } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import RightSection from "@/components/RightSection";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "next-themes";
 
 export default function HomePage() {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showTokenInput, setShowTokenInput] = useState(false);
@@ -55,6 +58,11 @@ export default function HomePage() {
     login: string;
     avatar_url: string;
   } | null>(null);
+
+  // Set mounted state after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Validate token when it changes
   useEffect(() => {
@@ -429,6 +437,24 @@ export default function HomePage() {
           <p className="mt-2 opacity-70">
             Curious? Try &apos;demo&apos; to preview the experience ✨
           </p>
+        </div>
+
+        {/* Product Hunt Badge */}
+        <div className="mt-6 flex justify-center h-[54px]">
+          {mounted && (
+            <a
+              href="https://www.producthunt.com/products/gitstory-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-gitstory-2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1051707&theme=${resolvedTheme === 'light' ? 'light' : 'dark'}`}
+                alt="Featured on Product Hunt"
+                className="w-[200px] sm:w-[250px] h-auto"
+              />
+            </a>
+          )}
         </div>
       </div>
       <div className="hidden lg:block relative w-full aspect-square">
