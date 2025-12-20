@@ -79,10 +79,13 @@
   --animate-shiny-text: shiny-text 8s infinite;
 
   @keyframes shiny-text {
-    0%, 90%, 100% {
+    0%,
+    90%,
+    100% {
       background-position: calc(-100% - var(--shiny-width)) 0;
     }
-    30%, 60% {
+    30%,
+    60% {
       background-position: calc(100% + var(--shiny-width)) 0;
     }
   }
@@ -90,7 +93,9 @@
   --animate-tilt: tilt 10s infinite linear;
 
   @keyframes tilt {
-    0%, 50%, 100% {
+    0%,
+    50%,
+    100% {
       transform: rotate(0deg);
     }
     25% {
@@ -191,6 +196,43 @@
 
   .status-banner--error {
     @apply bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400;
+  }
+
+  /* Share button social icons hover colors */
+  .share-item:hover svg {
+    transition: fill 0.2s;
+  }
+  /* Light mode colors */
+  .share-item[data-platform="twitter"]:hover svg {
+    fill: #000000;
+  }
+  .share-item[data-platform="linkedin"]:hover svg {
+    fill: #0a66c2;
+  }
+  .share-item[data-platform="facebook"]:hover svg {
+    fill: #1877f2;
+  }
+  .share-item[data-platform="reddit"]:hover svg {
+    fill: #ff4500;
+  }
+  .share-item[data-platform="whatsapp"]:hover svg {
+    fill: #25d366;
+  }
+  /* Dark mode colors - brighter for visibility */
+  .dark .share-item[data-platform="twitter"]:hover svg {
+    fill: #ffffff;
+  }
+  .dark .share-item[data-platform="linkedin"]:hover svg {
+    fill: #0a96e6;
+  }
+  .dark .share-item[data-platform="facebook"]:hover svg {
+    fill: #4599ff;
+  }
+  .dark .share-item[data-platform="reddit"]:hover svg {
+    fill: #ff6633;
+  }
+  .dark .share-item[data-platform="whatsapp"]:hover svg {
+    fill: #2ee07a;
   }
 }
 

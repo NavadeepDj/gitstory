@@ -3,7 +3,16 @@
 import { GitStoryData } from "@/types";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, Loader2, Star, Lock } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  Loader2,
+  Star,
+  Lock,
+  Share2,
+  Copy,
+  Check,
+} from "lucide-react";
 import Link from "next/link";
 import { useRef, useCallback, useEffect, useState } from "react";
 import { toPng } from "html-to-image";
@@ -12,6 +21,15 @@ import { BorderBeam } from "@/components/ui/border-beam";
 import confetti from "canvas-confetti";
 import { ActivityCalendar, ThemeInput } from "react-activity-calendar";
 import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Icons } from "@/components/custom/icons";
+import { siteConfig } from "@/lib/config";
 
 interface SlideProps {
   data: GitStoryData;
@@ -22,7 +40,13 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { resolvedTheme } = useTheme();
+
+  const shareUrl = `${siteConfig.url}/${data.username}`;
+  const shareText = `Check out my GitHub Year in Review! 🚀 ${data.totalCommits.toLocaleString()} commits this year as "${
+    data.archetype
+  }" #GitStory #GitHub`;
 
   // Track when component has mounted to prevent hydration mismatch
   useEffect(() => {
@@ -118,6 +142,92 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
     }
   }, [data.username, isDownloading]);
 
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link", err);
+    }
+  }, [shareUrl]);
+
+  // Native share with image support (for mobile/supported browsers)
+  const handleNativeShare = useCallback(async () => {
+    if (!cardRef.current) return;
+
+    try {
+      // Generate the image
+      const dataUrl = await toPng(cardRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        skipFonts: true,
+      });
+
+      // Convert to blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `gitstory-${data.username}.png`, {
+        type: "image/png",
+      });
+
+      // Check if Web Share API with files is supported
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: "My GitStory",
+          text: shareText,
+          url: shareUrl,
+          files: [file],
+        });
+      } else if (navigator.share) {
+        // Fallback to share without file
+        await navigator.share({
+          title: "My GitStory",
+          text: shareText,
+          url: shareUrl,
+        });
+      } else {
+        // Fallback to copy link
+        handleCopyLink();
+      }
+    } catch (err) {
+      // User cancelled or error
+      if ((err as Error).name !== "AbortError") {
+        console.error("Share failed", err);
+      }
+    }
+  }, [data.username, shareText, shareUrl, handleCopyLink]);
+
+  const handleShare = useCallback(
+    (platform: string) => {
+      // Use native share for mobile if available
+      if (platform === "native") {
+        handleNativeShare();
+        return;
+      }
+
+      const encodedUrl = encodeURIComponent(shareUrl);
+      const encodedText = encodeURIComponent(shareText);
+
+      const shareUrls: Record<string, string> = {
+        twitter: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+        reddit: `https://reddit.com/submit?url=${encodedUrl}&title=${encodedText}`,
+        whatsapp: `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
+      };
+
+      if (shareUrls[platform]) {
+        window.open(
+          shareUrls[platform],
+          "_blank",
+          "noopener,noreferrer,width=600,height=400"
+        );
+      }
+    },
+    [shareUrl, shareText, handleNativeShare]
+  );
+
   const topLang =
     data.topLanguages && data.topLanguages.length > 0
       ? data.topLanguages[0].name
@@ -163,42 +273,47 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
             </div>
           </div>
 
-          <div className="h-px w-full bg-border my-4" />
+          <div className="h-px w-full bg-border mt-1 mb-2" />
 
           {/* Main Stats */}
-          <div className="space-y-6 md:space-y-8">
+          <div className="space-y-4 md:space-y-6">
             {/* Starring */}
-            <div>
-              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground mb-1 uppercase">
-                Starring
-              </p>
-              <h2 className="text-2xl md:text-4xl font-sans font-bold tracking-tight">
-                @{data.username}
-              </h2>
-              <p className="font-serif italic text-xl md:text-2xl text-green-600 dark:text-green-400 mt-1">
-                {data.archetype}
-              </p>
-              {data.joinedAt && (
-                <p className="font-sans text-[10px] md:text-xs text-muted-foreground mt-2">
-                  Joined{" "}
-                  {(() => {
-                    const totalDays = Math.floor(
-                      (new Date().getTime() -
-                        new Date(data.joinedAt).getTime()) /
-                        (1000 * 60 * 60 * 24)
-                    );
-                    const years = Math.floor(totalDays / 365);
-                    const days = totalDays % 365;
-                    if (years > 0) {
-                      return `${years} Year${
-                        years > 1 ? "s" : ""
-                      }, ${days} Day${days !== 1 ? "s" : ""}`;
-                    }
-                    return `${days} Day${days !== 1 ? "s" : ""}`;
-                  })()}{" "}
-                  Ago
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground mb-1 uppercase">
+                  Starring
                 </p>
-              )}
+                <h2 className="text-2xl md:text-4xl font-sans font-bold tracking-tight">
+                  @{data.username}
+                </h2>
+                <p className="font-serif italic text-xl md:text-2xl text-green-600 dark:text-green-400 mt-1">
+                  {data.archetype}
+                </p>
+              </div>
+
+              <div>
+                {data.joinedAt && (
+                  <p className="font-sans text-[10px] md:text-xs text-muted-foreground italic">
+                    Joined{" "}
+                    {(() => {
+                      const totalDays = Math.floor(
+                        (new Date().getTime() -
+                          new Date(data.joinedAt).getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      );
+                      const years = Math.floor(totalDays / 365);
+                      const days = totalDays % 365;
+                      if (years > 0) {
+                        return `${years} Year${
+                          years > 1 ? "s" : ""
+                        }, ${days} Day${days !== 1 ? "s" : ""}`;
+                      }
+                      return `${days} Day${days !== 1 ? "s" : ""}`;
+                    })()}{" "}
+                    Ago
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* 2x2 Stats Grid */}
@@ -377,6 +492,75 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
               </>
             )}
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="px-6">
+                <Share2 className="size-4" />
+                Share
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-48">
+              <DropdownMenuItem
+                onClick={() => handleShare("twitter")}
+                className="cursor-pointer share-item"
+                data-platform="twitter"
+              >
+                <Icons.xTwitter className="size-4" />X / Twitter
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleShare("linkedin")}
+                className="cursor-pointer share-item"
+                data-platform="linkedin"
+              >
+                <Icons.linkedin className="size-4" />
+                LinkedIn
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleShare("facebook")}
+                className="cursor-pointer share-item"
+                data-platform="facebook"
+              >
+                <Icons.facebook className="size-4" />
+                Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleShare("reddit")}
+                className="cursor-pointer share-item"
+                data-platform="reddit"
+              >
+                <Icons.reddit className="size-4" />
+                Reddit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleShare("whatsapp")}
+                className="cursor-pointer share-item"
+                data-platform="whatsapp"
+              >
+                <Icons.whatsapp className="size-4" />
+                WhatsApp
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => handleShare("native")}
+                className="cursor-pointer"
+              >
+                <Share2 className="size-4" />
+                Share with Image
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleCopyLink}
+                className="cursor-pointer"
+              >
+                {copied ? (
+                  <Check className="size-4 text-green-500" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+                {copied ? "Copied!" : "Copy Link"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Link href="/">
             <Button variant="outline" className="px-6">
