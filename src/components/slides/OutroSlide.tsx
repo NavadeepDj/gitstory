@@ -116,7 +116,7 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
         const dataUrl = await toPng(cardRef.current, {
           cacheBust: true,
           pixelRatio: 2,
-          skipFonts: true,
+          //   skipFonts: true,
         });
 
         // Convert data URL to blob for better cross-browser compatibility
@@ -152,60 +152,8 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
     }
   }, [shareUrl]);
 
-  // Native share with image support (for mobile/supported browsers)
-  const handleNativeShare = useCallback(async () => {
-    if (!cardRef.current) return;
-
-    try {
-      // Generate the image
-      const dataUrl = await toPng(cardRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        skipFonts: true,
-      });
-
-      // Convert to blob
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const file = new File([blob], `gitstory-${data.username}.png`, {
-        type: "image/png",
-      });
-
-      // Check if Web Share API with files is supported
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: "My GitStory",
-          text: shareText,
-          url: shareUrl,
-          files: [file],
-        });
-      } else if (navigator.share) {
-        // Fallback to share without file
-        await navigator.share({
-          title: "My GitStory",
-          text: shareText,
-          url: shareUrl,
-        });
-      } else {
-        // Fallback to copy link
-        handleCopyLink();
-      }
-    } catch (err) {
-      // User cancelled or error
-      if ((err as Error).name !== "AbortError") {
-        console.error("Share failed", err);
-      }
-    }
-  }, [data.username, shareText, shareUrl, handleCopyLink]);
-
   const handleShare = useCallback(
     (platform: string) => {
-      // Use native share for mobile if available
-      if (platform === "native") {
-        handleNativeShare();
-        return;
-      }
-
       const encodedUrl = encodeURIComponent(shareUrl);
       const encodedText = encodeURIComponent(shareText);
 
@@ -225,7 +173,7 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
         );
       }
     },
-    [shareUrl, shareText, handleNativeShare]
+    [shareUrl, shareText]
   );
 
   const topLang =
@@ -541,13 +489,6 @@ export default function OutroSlide({ data, isActive }: SlideProps) {
                 WhatsApp
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => handleShare("native")}
-                className="cursor-pointer"
-              >
-                <Share2 className="size-4" />
-                Share with Image
-              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleCopyLink}
                 className="cursor-pointer"
