@@ -76,6 +76,14 @@ export const metadata: Metadata = {
     siteName: "GitStory",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "GitStory Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -83,6 +91,7 @@ export const metadata: Metadata = {
     description:
       "Every commit tells a story. Transform your GitHub journey into a cinematic masterpiece.",
     creator: "@gitstory",
+    images: ["/icon-512.png"],
   },
   robots: {
     index: true,
