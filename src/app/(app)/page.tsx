@@ -1,27 +1,14 @@
 "use client";
 
 import { Icons } from "@/components/custom/icons";
-import ShadTooltip from "@/components/custom/shad-tooltip";
 import RightSection from "@/components/RightSection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  AlertCircle,
-  CheckIcon,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Key,
-  Loader2,
-  Lock,
-  Trash2,
-  Wand,
-  XCircle,
-} from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { LogOut, Loader2, Wand, Link as LinkIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
@@ -31,86 +18,50 @@ export default function HomePage() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
+  const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
   const [username, setUsername] = useState("");
-  const [token, setToken] = useState("");
-  const [showTokenInput, setShowTokenInput] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<{
     message: string;
     type: "rate_limit" | "not_found" | "auth" | "generic";
   } | null>(null);
 
-  // Token validation state
-  const [tokenStatus, setTokenStatus] = useState<
-    "idle" | "validating" | "valid" | "invalid"
-  >("idle");
-  const [tokenUser, setTokenUser] = useState<{
-    login: string;
-    avatar_url: string;
-  } | null>(null);
-
-  // Validate token when it changes
+  // Track when component is mounted to prevent hydration mismatch
   useEffect(() => {
-    if (!token || token.length < 10) {
-      setTokenStatus("idle");
-      setTokenUser(null);
-      return;
+    setMounted(true);
+  }, []);
+
+  // Auto-fill username when authenticated via OAuth
+  useEffect(() => {
+    if (isAuthenticated && user?.login && !username) {
+      setUsername(user.login);
     }
-
-    const validateToken = async () => {
-      setTokenStatus("validating");
-      try {
-        const res = await fetch("https://api.github.com/user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const user = await res.json();
-          setTokenUser({ login: user.login, avatar_url: user.avatar_url });
-          setTokenStatus("valid");
-          // Auto-fill username if empty
-          if (!username) setUsername(user.login);
-        } else {
-          setTokenStatus("invalid");
-          setTokenUser(null);
-        }
-      } catch {
-        setTokenStatus("invalid");
-        setTokenUser(null);
-      }
-    };
-
-    const debounce = setTimeout(validateToken, 500);
-    return () => clearTimeout(debounce);
-  }, [token, username]);
+  }, [isAuthenticated, user?.login, username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username) return;
 
-    // Optional: Pass token via query param if it exists (simplest for now)
-    // Ideally we'd store this in a context or cookie, but for this prototype query param is fine
-    // Or just rely on public API if no token.
-    // SECURITY WARNING: Putting token in URL is not secure for production.
-    // Using a more persistent store in a real app would be better.
-    // For this 'fun' app, we'll strip it if we can or just use it.
+    // Navigate to story page - token is now handled via cookie, not URL
+    router.push(`/${username}` as `/${string}`);
+  };
 
-    // Better approach: use useMutation to just check if valid, then push.
-    // Actually, let's just push and let the next page handle fetching.
+  const handleConnectGitHub = () => {
+    // Redirect to OAuth initiation endpoint
+    window.location.href = "/api/auth/github";
+  };
 
-    let url = `/${username}`;
-    if (token) {
-      url += `?token=${token}`;
-    }
-
-    router.push(url as `/${string}`);
+  const handleDisconnect = async () => {
+    await logout();
+    setUsername("");
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center justify-center w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="w-full max-w-md mx-auto">
-        <div className="text-center mb-12">
-          {/* <Github size={64} className="mx-auto mb-6 text-white" /> */}
-          <Icons.gitHub className="size-16! mx-auto mb-6" />
-          <h1 className="text-5xl md:text-7xl font-serif italic mb-2 tracking-tight">
+        <div className="text-center mb-8">
+          <Icons.gitHub className="size-16! mx-auto mb-4" />
+          <h1 className="text-5xl md:text-7xl font-serif italic mb-3 tracking-tight">
             GitStory
           </h1>
           <p className="text-muted-foreground font-sans tracking-widest text-sm uppercase">
@@ -130,183 +81,75 @@ export default function HomePage() {
                 }}
                 placeholder="Enter GitHub username"
                 className="px-6 py-6 text-lg! font-mono text-center placeholder:text-muted-foreground/70"
-                autoFocus
+                autoFocus={!isAuthenticated}
+                disabled={isAuthenticated}
                 required
               />
             </Field>
 
-            {/* Optional Token Section */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowTokenInput(!showTokenInput)}
-                className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-xs font-mono py-2 transition-colors"
-              >
-                <Key size={12} />
-                {showTokenInput ? (
-                  "Hide Token"
-                ) : tokenStatus === "valid" ? (
-                  <div className="status-banner status-banner--success text-center py-1! px-2!">
-                    <Avatar className="size-4">
-                      <AvatarImage src={tokenUser?.avatar_url || ""} />
+            {/* OAuth Connect Section */}
+            <div className="pt-2">
+              <AnimatePresence mode="wait">
+                {authLoading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center gap-2 py-3 text-muted-foreground text-sm"
+                  >
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Checking authentication...</span>
+                  </motion.div>
+                ) : isAuthenticated && user ? (
+                  <motion.div
+                    key="authenticated"
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="status-banner status-banner--success text-center w-full"
+                  >
+                    <Avatar className="size-5">
+                      <AvatarImage src={user.avatar_url} />
                       <AvatarFallback>
-                        {tokenUser?.login.charAt(0).toUpperCase() || ""}
+                        {user.login.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span>
-                      Connected as <strong>@{tokenUser?.login || ""}</strong>
+                    <span className="flex-1">
+                      Connected as <strong>@{user.login}</strong>
                     </span>
-                  </div>
+                    <Button
+                      type="button"
+                      onClick={handleDisconnect}
+                      variant="ghost"
+                      size="icon-sm"
+                      className="ml-auto text-muted-foreground hover:text-destructive"
+                      title="Disconnect"
+                    >
+                      <LogOut size={14} />
+                    </Button>
+                  </motion.div>
                 ) : (
-                  `Add GitHub Token (Recommended${
-                    isMobile ? "" : " for richer insights"
-                  })`
-                )}{" "}
-                {showTokenInput ? (
-                  <ChevronUp size={12} />
-                ) : (
-                  <ChevronDown size={12} />
-                )}
-              </button>
-
-              <AnimatePresence>
-                {showTokenInput && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
+                    key="unauthenticated"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-between gap-2"
                   >
-                    <div className="pt-2 space-y-2">
-                      <div className="relative">
-                        <Field>
-                          <Input
-                            id="github-token"
-                            type="password"
-                            value={token}
-                            onChange={(e) => setToken(e.target.value)}
-                            placeholder="ghp_xxxxxxxxxxxx"
-                            className="px-6 py-5 font-mono text-center placeholder:text-muted-foreground/70"
-                            required
-                          />
-                        </Field>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-50 pointer-events-auto">
-                          {token?.length > 0 && tokenStatus !== "idle" ? (
-                            <>
-                              {tokenStatus === "valid" ? (
-                                <ShadTooltip content={<p>Token verified</p>}>
-                                  <Badge
-                                    className="h-5 w-5 rounded-full px-1 bg-blue-600 text-white pointer-events-none"
-                                    variant="secondary"
-                                    aria-label="Token verified"
-                                  >
-                                    <CheckIcon
-                                      className="w-3 h-3"
-                                      strokeWidth={3}
-                                    />
-                                  </Badge>
-                                </ShadTooltip>
-                              ) : tokenStatus === "invalid" ? (
-                                <ShadTooltip
-                                  content={<p>Please enter a valid token</p>}
-                                >
-                                  <Badge
-                                    className="h-5 w-5 rounded-full px-1 pointer-events-none"
-                                    variant="destructive"
-                                    aria-label="Invalid token"
-                                  >
-                                    <AlertCircle
-                                      className="w-3 h-3"
-                                      strokeWidth={3}
-                                    />
-                                  </Badge>
-                                </ShadTooltip>
-                              ) : (
-                                <ShadTooltip
-                                  content={<p>Validating token...</p>}
-                                >
-                                  <Badge
-                                    className="h-5 w-5 rounded-full px-1 pointer-events-none"
-                                    variant="secondary"
-                                    aria-label="Validating token"
-                                  >
-                                    <Loader2
-                                      className="w-3 h-3 animate-spin"
-                                      strokeWidth={3}
-                                    />
-                                  </Badge>
-                                </ShadTooltip>
-                              )}
-                            </>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      {/* Auth status badge */}
-                      <AnimatePresence>
-                        {tokenStatus === "valid" && tokenUser && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -5 }}
-                            className="status-banner status-banner--success text-center w-fit mx-auto"
-                          >
-                            <Avatar className="size-5">
-                              <AvatarImage src={tokenUser.avatar_url} />
-                              <AvatarFallback>
-                                {tokenUser.login.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>
-                              Connected as <strong>@{tokenUser.login}</strong>
-                            </span>
-                            <Button
-                              onClick={() => {
-                                setToken("");
-                                setTokenStatus("idle");
-                                setTokenUser(null);
-                              }}
-                              variant="ghost"
-                              size="icon"
-                              className="ml-auto"
-                            >
-                              <Trash2 />
-                            </Button>
-                          </motion.div>
-                        )}
-                        {tokenStatus === "invalid" && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -5 }}
-                            className="status-banner status-banner--error py-2!"
-                          >
-                            <XCircle size={14} className="text-red-400" />
-                            <span>Invalid token - check and try again</span>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      <div className="flex flex-col sm:flex-row items-center justify-center text-center gap-1 sm:gap-2 text-muted-foreground/50 text-xs pt-2">
-                        <div className="flex items-center gap-1.5">
-                          <Lock size={12} className="shrink-0" />
-                          <span>Stored in browser.</span>
-                        </div>
-                        <span className="hidden sm:inline text-muted-foreground/20">
-                          |
-                        </span>
-                        <span>
-                          Enables private/org repos, 5K calls/hr.{" "}
-                          <a
-                            href="https://github.com/settings/tokens/new?scopes=repo,read:org,read:user&description=GitStory"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="pl-2 text-accent-foreground hover:underline inline-flex items-center gap-0.5"
-                          >
-                            Create <ExternalLink className="size-3" />
-                          </a>
-                        </span>
-                      </div>
-                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleConnectGitHub}
+                      className="gap-2 rounded-full"
+                    >
+                      <Icons.gitHub className="size-3.5" />
+                      Connect with GitHub
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground/60">
+                      Private repos & higher API limits
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -321,62 +164,12 @@ export default function HomePage() {
               Generate Story{" "}
               <Wand className="size-4 group-hover:rotate-5 transition-transform" />
             </Button>
-
-            {/* Enhanced Error Display */}
-            {/* <AnimatePresence>
-              {errorDetails && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className={`p-4 rounded-xl border ${
-                    error?.type === 'rate_limit' 
-                      ? 'bg-orange-900/20 border-orange-800/50' 
-                      : error?.type === 'not_found'
-                      ? 'bg-yellow-900/20 border-yellow-800/50'
-                      : 'bg-red-900/20 border-red-800/50'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <AlertCircle size={18} className={`shrink-0 mt-0.5 ${
-                      error?.type === 'rate_limit' ? 'text-orange-400' : 
-                      error?.type === 'not_found' ? 'text-yellow-400' : 'text-red-400'
-                    }`} />
-                    <div className="flex-1">
-                      <p className="font-bold text-sm text-white mb-1">{errorDetails.title}</p>
-                      <p className="text-xs text-neutral-400 mb-2">{errorDetails.message}</p>
-                      <p className="text-xs text-neutral-500">{errorDetails.suggestion}</p>
-                      
-                      {errorDetails.showTokenHint && !showTokenInput && (
-                        <button
-                          type="button"
-                          onClick={() => setShowTokenInput(true)}
-                          className="mt-2 text-xs text-hero-blue hover:underline flex items-center gap-1"
-                        >
-                          <Key size={10} /> Add Token for Higher Limits
-                        </button>
-                      )}
-                      
-                      {error?.type === 'rate_limit' && (
-                        <button
-                          type="button"
-                          onClick={handleSubmit}
-                          className="mt-2 text-xs text-hero-purple hover:underline flex items-center gap-1"
-                        >
-                          <RefreshCw size={10} /> Try Again
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence> */}
           </FieldGroup>
         </form>
 
         <div className="mt-8 text-center text-xs text-muted-foreground font-mono">
           <p className="mt-2 opacity-70">
-            Curious? Try &apos;demo&apos; to preview the experience ✨
+            Curious? Try &apos;demo&apos; to preview ✨
           </p>
         </div>
 
@@ -390,11 +183,10 @@ export default function HomePage() {
           >
             <img
               src={`https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1051707&theme=${
-                resolvedTheme === "light" ? "light" : "dark"
+                mounted && resolvedTheme === "light" ? "light" : "dark"
               }&period=daily`}
               alt="GitStory - Top Post on Product Hunt"
               className="w-[190px] sm:w-[220px] h-auto"
-              // className="w-[200px] sm:w-[250px] h-auto"
             />
           </a>
         </div>

@@ -4,6 +4,7 @@ import { GitStoryData } from "@/types";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { siteConfig } from "@/lib/config";
+import { cookies } from "next/headers";
 
 interface PageProps {
   params: Promise<{ githubId: string }>;
@@ -44,17 +45,19 @@ export async function generateMetadata({
   };
 }
 
-export default async function StoryPage({ params, searchParams }: PageProps) {
+export default async function StoryPage({ params }: PageProps) {
   const { githubId } = await params;
-  const { token } = await searchParams;
+
+  // Read OAuth token from HTTP-only cookie
+  const cookieStore = await cookies();
+  const token = cookieStore.get("gitstory_token")?.value;
 
   // Fetch data on the server side
   let storyData: GitStoryData | null = null;
   let error = null;
 
   try {
-    const verifiedToken = typeof token === "string" ? token : undefined;
-    storyData = await fetchUserStory(githubId, verifiedToken);
+    storyData = await fetchUserStory(githubId, token);
   } catch (e) {
     console.error("Failed to fetch story data", e);
     error = e instanceof Error ? e.message : "Failed to load story";

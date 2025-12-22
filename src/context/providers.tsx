@@ -7,7 +7,8 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useState } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { PostHogProvider } from './post-hog-provider'
+import { PostHogProvider } from "./post-hog-provider";
+import { AuthProvider } from "@/contexts/auth-context";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient());
@@ -22,7 +23,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       >
         <QueryClientProvider client={queryClient}>
           <PostHogProvider>
-            {children}
+            <AuthProvider>{children}</AuthProvider>
           </PostHogProvider>
           <Analytics />
           <SpeedInsights />
