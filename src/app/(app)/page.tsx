@@ -130,6 +130,7 @@ export default function HomePage() {
                 }}
                 placeholder="Enter GitHub username"
                 className="px-6 py-6 text-lg! font-mono text-center placeholder:text-muted-foreground/70"
+                autoFocus
                 required
               />
             </Field>
