@@ -1,7 +1,6 @@
 "use client";
 
 import { Icons } from "@/components/custom/icons";
-import { AdSenseAd } from "@/components/custom/adsense-ad";
 import RightSection from "@/components/RightSection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -233,18 +232,8 @@ export default function HomePage() {
           </a>
         </div>
       </div>
-      {/* Right section with Globe and Ad */}
-      <div className="hidden lg:flex flex-col gap-6 w-full">
-        <div className="relative w-full aspect-square">
-          <RightSection />
-        </div>
-        {/* Ad Section below Globe */}
-        <div className="w-full max-w-md mx-auto">
-          <AdSenseAd
-            adFormat="horizontal"
-            className="rounded-lg overflow-hidden opacity-80 hover:opacity-100 transition-opacity"
-          />
-        </div>
+      <div className="hidden lg:block relative w-full aspect-square">
+        <RightSection />
       </div>
     </div>
   );
