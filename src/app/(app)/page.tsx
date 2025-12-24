@@ -253,7 +253,11 @@ export default function HomePage() {
             className="transition-opacity hover:opacity-80"
           >
             <img
-              src="https://startupfa.me/badges/featured-badge.webp"
+              src={
+                mounted && resolvedTheme === "light"
+                  ? "https://startupfa.me/badges/featured-badge.webp"
+                  : "https://startupfa.me/badges/featured/dark.webp"
+              }
               alt="GitStory - Featured on Startup Fame"
               width="171"
               height="54"
