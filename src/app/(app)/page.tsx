@@ -214,8 +214,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Product Hunt Badge */}
-        <div className="mt-6 flex justify-center h-[54px]">
+        {/* Product Hunt & Twelve Tools Badges */}
+        <div className="mt-6 flex justify-center items-center gap-3">
           <a
             href="https://www.producthunt.com/products/gitstory-2?embed=true&utm_source=badge-top-post-badge&utm_medium=badge&utm_campaign=badge-gitstory-2"
             target="_blank"
@@ -228,6 +228,22 @@ export default function HomePage() {
               }&period=daily`}
               alt="GitStory - Top Post on Product Hunt"
               className="w-[190px] sm:w-[220px] h-auto"
+            />
+          </a>
+          <a
+            href="https://twelve.tools"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-opacity hover:opacity-80"
+          >
+            <img
+              src={`https://twelve.tools/badge0-${
+                mounted && resolvedTheme === "light" ? "light" : "dark"
+              }.svg`}
+              alt="Featured on Twelve Tools"
+              width="200"
+              height="54"
+              className="w-[150px] sm:w-[180px] h-auto"
             />
           </a>
         </div>
