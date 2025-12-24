@@ -123,87 +123,140 @@ export const SCORING_CONFIG = {
   // ============================================
   // REPOSITORY SCORING
   // ============================================
+
+  export interface RepoScoreBreakdown {
+    total: number;
+    stars: number;
+    forks: number;
+    recency: number;
+    originalWork: number;
+    description: number;
+    topics: number;
+    language: number;
+    watchers: number;
+    archived: number;
+    size: number;
+    openIssues: number;
+    createdIn2025: number;
+  }
+  
+  /**
+   * Calculate a comprehensive score breakdown for a repository
+   * Returns object with total and individual component scores
+   */
+  export function calculateRepoScoreBreakdown(repo: any): RepoScoreBreakdown {
+    let score = 0;
+    const config = SCORING_CONFIG.repo;
+    const now = new Date();
+    const year2025Start = new Date('2025-01-01');
+    
+    const breakdown: RepoScoreBreakdown = {
+      total: 0,
+      stars: 0,
+      forks: 0,
+      recency: 0,
+      originalWork: 0,
+      description: 0,
+      topics: 0,
+      language: 0,
+      watchers: 0,
+      archived: 0,
+      size: 0,
+      openIssues: 0,
+      createdIn2025: 0,
+    };
+    
+    // 1. Stars (logarithmic scale)
+    breakdown.stars = Math.min(
+      Math.log10(repo.stargazers_count + 1) * config.stars.logMultiplier,
+      config.stars.maxPoints
+    );
+    score += breakdown.stars;
+    
+    // 2. Forks (logarithmic scale)
+    breakdown.forks = Math.min(
+      Math.log10(repo.forks_count + 1) * config.forks.logMultiplier,
+      config.forks.maxPoints
+    );
+    score += breakdown.forks;
+    
+    // 3. Recency - repos pushed in 2025 get priority
+    const pushedAt = new Date(repo.pushed_at);
+    if (pushedAt >= year2025Start) {
+      const daysSincePush = Math.max(0, (now.getTime() - pushedAt.getTime()) / (1000 * 60 * 60 * 24));
+      breakdown.recency = Math.max(0, config.recency.maxPoints - (daysSincePush / config.recency.decayDays));
+      score += breakdown.recency;
+    }
+    
+    // 4. Original work bonus (not a fork)
+    if (!repo.fork) {
+      breakdown.originalWork = config.originalWork;
+      score += breakdown.originalWork;
+    }
+    
+    // 5. Has description
+    if (repo.description && repo.description.trim().length > 10) {
+      breakdown.description = config.hasDescription;
+      score += breakdown.description;
+    }
+    
+    // 6. Has topics/tags
+    if (repo.topics && repo.topics.length > 0) {
+      breakdown.topics = config.hasTopics;
+      score += breakdown.topics;
+    }
+    
+    // 7. Has a primary language
+    if (repo.language) {
+      breakdown.language = config.hasLanguage;
+      score += breakdown.language;
+    }
+    
+    // 8. Watchers
+    breakdown.watchers = Math.min(repo.watchers_count * config.watchersMultiplier, config.watchersMax);
+    score += breakdown.watchers;
+    
+    // 9. Archived penalty
+    if (repo.archived) {
+      breakdown.archived = config.archivedPenalty;
+      score += breakdown.archived;
+    }
+    
+    // 10. Repo size (proxy for code volume)
+    if (repo.size > 0) {
+      breakdown.size = Math.min(
+        Math.log10(repo.size) * config.sizeLogMultiplier,
+        config.sizeMaxPoints
+      );
+      score += breakdown.size;
+    }
+    
+    // 11. Open issues (activity indicator)
+    if (repo.open_issues_count > 0) {
+      breakdown.openIssues = Math.min(
+        Math.log10(repo.open_issues_count + 1) * config.openIssuesLogMultiplier,
+        config.openIssuesMaxPoints
+      );
+      score += breakdown.openIssues;
+    }
+    
+    // 12. Created in 2025
+    const createdAt = new Date(repo.created_at);
+    if (createdAt >= year2025Start) {
+      breakdown.createdIn2025 = config.createdIn2025Bonus;
+      score += breakdown.createdIn2025;
+    }
+    
+    breakdown.total = score;
+    return breakdown;
+  }
   
   /**
    * Calculate a comprehensive score for a repository
    * Higher score = more interesting/important project
    */
   export function calculateRepoScore(repo: any): number {
-    let score = 0;
-    const config = SCORING_CONFIG.repo;
-    const now = new Date();
-    const year2025Start = new Date('2025-01-01');
-    
-    // 1. Stars (logarithmic scale)
-    score += Math.min(
-      Math.log10(repo.stargazers_count + 1) * config.stars.logMultiplier,
-      config.stars.maxPoints
-    );
-    
-    // 2. Forks (logarithmic scale)
-    score += Math.min(
-      Math.log10(repo.forks_count + 1) * config.forks.logMultiplier,
-      config.forks.maxPoints
-    );
-    
-    // 3. Recency - repos pushed in 2025 get priority
-    const pushedAt = new Date(repo.pushed_at);
-    if (pushedAt >= year2025Start) {
-      const daysSincePush = Math.max(0, (now.getTime() - pushedAt.getTime()) / (1000 * 60 * 60 * 24));
-      score += Math.max(0, config.recency.maxPoints - (daysSincePush / config.recency.decayDays));
-    }
-    
-    // 4. Original work bonus (not a fork)
-    if (!repo.fork) {
-      score += config.originalWork;
-    }
-    
-    // 5. Has description
-    if (repo.description && repo.description.trim().length > 10) {
-      score += config.hasDescription;
-    }
-    
-    // 6. Has topics/tags
-    if (repo.topics && repo.topics.length > 0) {
-      score += config.hasTopics;
-    }
-    
-    // 7. Has a primary language
-    if (repo.language) {
-      score += config.hasLanguage;
-    }
-    
-    // 8. Watchers
-    score += Math.min(repo.watchers_count * config.watchersMultiplier, config.watchersMax);
-    
-    // 9. Archived penalty
-    if (repo.archived) {
-      score += config.archivedPenalty;
-    }
-    
-    // 10. Repo size (proxy for code volume)
-    if (repo.size > 0) {
-      score += Math.min(
-        Math.log10(repo.size) * config.sizeLogMultiplier,
-        config.sizeMaxPoints
-      );
-    }
-    
-    // 11. Open issues (activity indicator)
-    if (repo.open_issues_count > 0) {
-      score += Math.min(
-        Math.log10(repo.open_issues_count + 1) * config.openIssuesLogMultiplier,
-        config.openIssuesMaxPoints
-      );
-    }
-    
-    // 12. Created in 2025
-    const createdAt = new Date(repo.created_at);
-    if (createdAt >= year2025Start) {
-      score += config.createdIn2025Bonus;
-    }
-    
-    return score;
+    return calculateRepoScoreBreakdown(repo).total;
   }
   
   // ============================================

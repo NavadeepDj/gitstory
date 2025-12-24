@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
+  // Temporarily disable React Compiler to unblock dev
+  reactCompiler: false,
+
+  // Explicitly set the Turbopack root to this workspace
+  // to avoid Next.js inferring the parent directory due to multiple lockfiles
+  turbopack: {
+    root: __dirname,
+  },
 
   // Experimental features for Next.js 16.1
   experimental: {
