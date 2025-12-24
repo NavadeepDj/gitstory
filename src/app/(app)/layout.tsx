@@ -9,15 +9,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       data-slot="layout"
       className="bg-background relative z-10 flex min-h-svh flex-col max-w-7xl mx-auto"
     >
-      <div className="flex items-center justify-end p-4 gap-2">
+      <div className="flex items-center justify-end px-4 pt-4 gap-2">
         <ShadTooltip content="View on GitHub">
           <GitHubLink />
         </ShadTooltip>
         <InfoDialog />
         <AnimatedThemeToggler />
       </div>
-      <main className="flex flex-1 flex-col items-center justify-center">{children}</main>
+      <main className="flex flex-1 flex-col items-center justify-center">
+        {children}
+      </main>
     </div>
   );
 }
-
