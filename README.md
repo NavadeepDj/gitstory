@@ -93,6 +93,29 @@
 
 ---
 
+## 🔐 Private Repos & Enhanced Data
+
+GitStory supports fetching data from **private repositories** when you connect your account via OAuth:
+
+| Feature                   | Without OAuth    | With OAuth (Connected)   |
+| ------------------------- | ---------------- | ------------------------ |
+| **Public Repos**          | ✅ Yes           | ✅ Yes                   |
+| **Private Repos**         | ❌ No            | ✅ Yes                   |
+| **Private Contributions** | ❌ No            | ✅ Yes (via GraphQL API) |
+| **Organization Repos**    | ❌ Limited       | ✅ Full access           |
+| **API Rate Limit**        | 60 requests/hour | 5,000 requests/hour      |
+
+### How to Connect
+
+1. Visit [gitstory.sitestash.org](https://gitstory.sitestash.org)
+2. Click the **GitHub** or **GitLab** button
+3. Authorize GitStory to access your account
+4. Your username auto-fills — hit "Generate Story"!
+
+> **🔒 Security Note**: Your OAuth token is stored in a secure HTTP-only cookie and is **never** exposed to client-side JavaScript or sent to any third-party servers.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Category             | Technology                                                            |

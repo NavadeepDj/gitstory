@@ -208,14 +208,15 @@ export default function HomePage() {
           </FieldGroup>
         </form>
 
-        <div className="mt-8 text-center text-xs text-muted-foreground font-mono">
+        <div className="mt-4 text-center text-xs text-muted-foreground font-mono">
           <p className="mt-2 opacity-70">
             Curious? Try &apos;demo&apos; to preview ✨
           </p>
         </div>
 
-        {/* Product Hunt Badge */}
-        <div className="mt-6 flex justify-center h-[54px]">
+        {/* Featured Badges */}
+        <div className="mt-6 flex flex-col items-center gap-3">
+          {/* Product Hunt Badge - Top Center */}
           <a
             href="https://www.producthunt.com/products/gitstory-2?embed=true&utm_source=badge-top-post-badge&utm_medium=badge&utm_campaign=badge-gitstory-2"
             target="_blank"
@@ -230,6 +231,75 @@ export default function HomePage() {
               className="w-[190px] sm:w-[220px] h-auto"
             />
           </a>
+
+          {/* Other Badges - Below */}
+          <div className="flex justify-center items-center gap-3">
+            <a
+              href="https://twelve.tools"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={`https://twelve.tools/badge0-${
+                  mounted && resolvedTheme === "light" ? "light" : "dark"
+                }.svg`}
+                alt="Featured on Twelve Tools"
+                width="200"
+                height="54"
+                className="w-[150px] sm:w-[180px] h-auto"
+              />
+            </a>
+            <a
+              href="https://startupfa.me/s/gitstory-1?utm_source=gitstory.sitestash.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={
+                  mounted && resolvedTheme === "light"
+                    ? "https://startupfa.me/badges/featured-badge.webp"
+                    : "https://startupfa.me/badges/featured/dark.webp"
+                }
+                alt="GitStory - Featured on Startup Fame"
+                width="171"
+                height="54"
+                className="w-[140px] sm:w-[171px] h-auto"
+              />
+            </a>
+            <a
+              href="https://findly.tools/gitstory?utm_source=gitstory"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={`https://findly.tools/badges/findly-tools-badge-${
+                  mounted && resolvedTheme === "light" ? "light" : "dark"
+                }.svg`}
+                alt="Featured on findly.tools"
+                width="150"
+                className="w-[120px] sm:w-[150px] h-auto"
+              />
+            </a>
+            <a
+              href="https://wired.business"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={`https://wired.business/badge0-${
+                  mounted && resolvedTheme === "light" ? "light" : "dark"
+                }.svg`}
+                alt="Featured on Wired Business"
+                width="200"
+                height="54"
+                className="w-[150px] sm:w-[180px] h-auto"
+              />
+            </a>
+          </div>
         </div>
       </div>
       <div className="hidden lg:block relative w-full aspect-square">
